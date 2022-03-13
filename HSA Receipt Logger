@@ -1,0 +1,44 @@
+// Parse the filenames of scanned receipts on Google Drive and log the parsed info for the purpose of HSA reimbursement.
+// Original version of file lister is linked to below:
+// https://www.acrosswalls.org/ortext-datalinks/list-google-drive-folder-file-names-urls/
+
+function listFolderContents() {
+  var foldername = 'HSA Receipts Backup';
+  var folderlisting = 'File List for ' + foldername;
+  
+  var folders = DriveApp.getFoldersByName(foldername)
+  var folder = folders.next();
+  var contents = folder.getFiles();
+  
+  var ss = SpreadsheetApp.create(folderlisting);
+  var sheet = ss.getActiveSheet();
+  sheet.appendRow( ['name', 'date', 'amount', 'link'] );
+  
+  var file;
+  var name;
+  var short_name;
+  var date;
+  var amount;
+  var link;
+  var row;
+
+  while(contents.hasNext()) {
+    file = contents.next();
+    name = file.getName()
+    // Parse file name
+    short_name = name.split(".")[0];
+    date = short_name.split("_")[0];
+    amount = short_name.split("_")[1];
+    amount = amount.replace("-",".")
+    link = file.getUrl();
+    sheet.appendRow( [name, date, amount, link] );     
+  }  
+
+// Format columns
+var date_col = sheet.getRange("B2:B");
+date_col.setNumberFormat("M/d/yy");
+
+var amount_col = sheet.getRange("C2:C");
+amount_col.setNumberFormat("[$$]#,##0.00");
+
+};
